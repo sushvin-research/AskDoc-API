@@ -1,5 +1,14 @@
-# Use an official Python runtime as a parent image
-FROM python:3.9-slim
+FROM ubuntu:22.04
+RUN apt update && apt install -y python3.10
+RUN echo ttf-mscorefonts-installer msttcorefonts/accepted-mscorefonts-eula select true | debconf-set-selections
+RUN apt install -y ttf-mscorefonts-installer
+RUN apt install -y python3-pip
+RUN apt install -y wget
+RUN apt install -y libgdiplus
+RUN python3.10 -m pip install --upgrade pip
+RUN wget http://security.ubuntu.com/ubuntu/pool/main/o/openssl/libssl1.1_1.1.0g-2ubuntu4_amd64.deb
+RUN dpkg -i ./libssl1.1_1.1.0g-2ubuntu4_amd64.deb
+RUN rm -i libssl1.1_1.1.0g-2ubuntu4_amd64.deb
 
 # Set the working directory in the container
 WORKDIR /app
@@ -9,6 +18,8 @@ COPY . /app
 
 # Install any needed packages specified in requirements.txt
 RUN pip install --no-cache-dir -r requirements.txt
+
+RUN pip install aspose-words
 
 # Make port 8000 available to the world outside this container
 EXPOSE 8000

@@ -1,18 +1,21 @@
 import os
-import re
 
 from docx import Document
+from dotenv import load_dotenv
 from htmldocx import HtmlToDocx
-from fastapi import FastAPI, File, UploadFile
+from fastapi import FastAPI, File, UploadFile, Form
 from pydantic import BaseModel
 from bs4 import BeautifulSoup
 import requests
 import aspose.words as aw
 from fastapi.responses import JSONResponse
+from starlette.staticfiles import StaticFiles
 
 from formatter import remove_watermark
 
 app = FastAPI()
+app.mount("/data", StaticFiles(directory="data"), name='images')
+load_dotenv()
 
 
 class DocxData(BaseModel):
@@ -34,10 +37,8 @@ def check_images_in_html(html_string):
         img_url = img.get('src')
         try:
             response = requests.head(img_url)
-            # If the response status code is 200, the image exists
             image_status[img_url] = response.status_code == 200
         except requests.RequestException:
-            # If there is any issue with the request, assume the image doesn't exist
             image_status[img_url] = False
 
     return image_status
@@ -58,12 +59,12 @@ async def createDocx(docxdata: DocxData):
         return {"status": "error", "message": str(e)}
 
 
-UPLOAD_DIRECTORY = "uploads/"
-
-
 @app.post("/convert/docxtohtml/")
-async def create_upload_file(file: UploadFile = File(...)):
+async def create_upload_file(file: UploadFile = File(...), currentUserId: str = Form(...),
+                             currentDocumentId: str = Form(...)):
     try:
+        TEMP_FOLDER = f".docx_{currentDocumentId}_process_{currentUserId}"
+        UPLOAD_DIRECTORY = f"data/document_images/{currentUserId}/{currentDocumentId}/{TEMP_FOLDER}/"
         if not os.path.exists(UPLOAD_DIRECTORY):
             os.makedirs(UPLOAD_DIRECTORY)
         contents = await file.read()
@@ -76,7 +77,7 @@ async def create_upload_file(file: UploadFile = File(...)):
         with open(UPLOAD_DIRECTORY + "output.html", 'r') as f:
             html_content = f.read()
 
-        html_content = remove_watermark(html_content)
+        html_content = remove_watermark(html_content, UPLOAD_DIRECTORY, TEMP_FOLDER)
 
         return JSONResponse(content={"documentData": html_content, "message": "File uploaded successfully"})
     except Exception as e:
