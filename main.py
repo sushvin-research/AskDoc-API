@@ -1,5 +1,5 @@
 import os
-
+import mammoth
 from docx import Document
 from dotenv import load_dotenv
 from htmldocx import HtmlToDocx
@@ -10,8 +10,7 @@ import requests
 import aspose.words as aw
 from fastapi.responses import JSONResponse
 from starlette.staticfiles import StaticFiles
-
-from formatter import remove_watermark
+from formatter import remove_watermark, p_tags_update
 
 app = FastAPI()
 app.mount("/data", StaticFiles(directory="data"), name='images')
@@ -77,7 +76,12 @@ async def create_upload_file(file: UploadFile = File(...), currentUserId: str = 
         with open(UPLOAD_DIRECTORY + "output.html", 'r') as f:
             html_content = f.read()
 
+        with open(UPLOAD_DIRECTORY + file.filename, "rb") as docx_file:
+            result = mammoth.convert_to_html(docx_file)
+
         html_content = remove_watermark(html_content, UPLOAD_DIRECTORY, TEMP_FOLDER)
+
+        html_content = p_tags_update(html_content, result.value)
 
         return JSONResponse(content={"documentData": html_content, "message": "File uploaded successfully"})
     except Exception as e:
