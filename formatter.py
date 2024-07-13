@@ -13,6 +13,15 @@ def parse_html(html_string):
     return html_content
 
 
+def add_meta_tag(html_string):
+    html = BeautifulSoup(html_string, 'lxml')
+    head_tag = html.new_tag('head')
+    html.html.insert(0, head_tag)
+    meta_tag = html.new_tag('meta', charset='utf-8')
+    html.head.append(meta_tag)
+    return str(html)
+
+
 def remove_watermark(html_content, UPLOAD_DIRECTORY, TEMP_FOLDER):
     div_pattern = re.compile(r'<div.*?>.*?</div>', re.DOTALL)
     div_tags = div_pattern.findall(html_content)

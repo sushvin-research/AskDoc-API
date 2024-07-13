@@ -10,7 +10,7 @@ import requests
 import aspose.words as aw
 from fastapi.responses import JSONResponse
 from starlette.staticfiles import StaticFiles
-from formatter import remove_watermark, p_tags_update, table_tags_update
+from formatter import remove_watermark, p_tags_update, table_tags_update, add_meta_tag
 import pdfkit
 
 app = FastAPI()
@@ -86,6 +86,8 @@ async def create_upload_file(file: UploadFile = File(...), currentUserId: str = 
         with open(UPLOAD_DIRECTORY + file.filename, "rb") as docx_file:
             result = mammoth.convert_to_html(docx_file)
 
+        html_content = add_meta_tag(html_content)
+
         html_content = remove_watermark(html_content, UPLOAD_DIRECTORY, TEMP_FOLDER)
 
         html_content = p_tags_update(html_content, result.value)
@@ -97,7 +99,7 @@ async def create_upload_file(file: UploadFile = File(...), currentUserId: str = 
 
 @app.post("/convert/htmltopdf/")
 def convert_html_to_pdf(pdf_data: PDFData):
-    html = pdf_data.htmlContent
+    html = add_meta_tag(pdf_data.htmlContent)
     html = table_tags_update(html)
     filename = pdf_data.filename
     pdfkit.from_string(html, filename)
