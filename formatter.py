@@ -82,3 +82,13 @@ def p_tags_update(html_string_1, html_string_2):
 
     modified_html1 = str(soup1)
     return modified_html1
+
+
+def table_tags_update(html_string):
+    soup = BeautifulSoup(html_string, 'html.parser')
+    for table in soup.find_all('table'):
+        table['style'] = 'border: 1px solid black; border-collapse: collapse;'
+    for td in soup.find_all('td'):
+        td['style'] = 'border: 1px solid black; border-collapse: collapse;'
+    styled_html = str(soup)
+    return styled_html

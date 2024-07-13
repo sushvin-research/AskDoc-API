@@ -10,7 +10,8 @@ import requests
 import aspose.words as aw
 from fastapi.responses import JSONResponse
 from starlette.staticfiles import StaticFiles
-from formatter import remove_watermark, p_tags_update
+from formatter import remove_watermark, p_tags_update, table_tags_update
+import pdfkit
 
 app = FastAPI()
 app.mount("/data", StaticFiles(directory="data"), name='images')
@@ -18,6 +19,11 @@ load_dotenv()
 
 
 class DocxData(BaseModel):
+    filename: str
+    htmlContent: str
+
+
+class PDFData(BaseModel):
     filename: str
     htmlContent: str
 
@@ -44,11 +50,12 @@ def check_images_in_html(html_string):
 
 
 @app.post("/convert/htmltodocx/")
-async def createDocx(docxdata: DocxData):
-    print(check_images_in_html(docxdata.htmlContent))
+async def createDocx(docx_data: DocxData):
+    print(check_images_in_html(docx_data.htmlContent))
     try:
-        html = docxdata.htmlContent
-        filename = docxdata.filename
+        html = docx_data.htmlContent
+        html = table_tags_update(html)
+        filename = docx_data.filename
         document = Document()
         new_parser = HtmlToDocx()
         new_parser.add_html_to_document(html, document)
@@ -86,3 +93,12 @@ async def create_upload_file(file: UploadFile = File(...), currentUserId: str = 
         return JSONResponse(content={"documentData": html_content, "message": "File uploaded successfully"})
     except Exception as e:
         return JSONResponse(content={"message": "There was an error uploading the file"}, status_code=400)
+
+
+@app.post("/convert/htmltopdf/")
+def convert_html_to_pdf(pdf_data: PDFData):
+    html = pdf_data.htmlContent
+    html = table_tags_update(html)
+    filename = pdf_data.filename
+    pdfkit.from_string(html, filename)
+    return {"status": "success", "path": filename, "message": "File uploaded successfully"}

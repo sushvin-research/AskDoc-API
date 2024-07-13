@@ -21,6 +21,10 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 RUN pip install aspose-words
 
+RUN wget https://github.com/wkhtmltopdf/wkhtmltopdf/releases/download/0.12.4/wkhtmltox-0.12.4_linux-generic-amd64.tar.xz
+RUN tar xvJf wkhtmltox-0.12.4_linux-generic-amd64.tar.xz
+RUN cp wkhtmltox/bin/wkhtmlto* /usr/bin/
+
 # Make port 8000 available to the world outside this container
 EXPOSE 8000
 
