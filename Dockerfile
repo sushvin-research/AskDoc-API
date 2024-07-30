@@ -13,8 +13,6 @@ RUN rm -i libssl1.1_1.1.0g-2ubuntu4_amd64.deb
 # Set the working directory in the container
 WORKDIR /app
 
-RUN mkdir -p /data
-
 # Copy the current directory contents into the container at /app
 COPY . /app
 
