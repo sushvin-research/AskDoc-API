@@ -8,13 +8,13 @@ RUN apt install -y libgdiplus
 RUN python3.10 -m pip install --upgrade pip
 RUN wget http://security.ubuntu.com/ubuntu/pool/main/o/openssl/libssl1.1_1.1.0g-2ubuntu4_amd64.deb
 RUN dpkg -i ./libssl1.1_1.1.0g-2ubuntu4_amd64.deb
-RUN rm -i libssl1.1_1.1.0g-2ubuntu4_amd64.deb
+RUN rm -rf libssl1.1_1.1.0g-2ubuntu4_amd64.deb
 
 # Set the working directory in the container
 WORKDIR /app
 
 # Copy the current directory contents into the container at /app
-COPY . /app
+COPY AskDoc-API/ /app
 
 # Install any needed packages specified in requirements.txt
 RUN pip install --no-cache-dir -r requirements.txt

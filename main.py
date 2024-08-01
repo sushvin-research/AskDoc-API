@@ -51,7 +51,7 @@ def check_images_in_html(html_string):
 
 @app.post("/convert/htmltodocx/")
 async def createDocx(docx_data: DocxData):
-    print(check_images_in_html(docx_data.htmlContent))
+    # print(check_images_in_html(docx_data.htmlContent))
     try:
         html = docx_data.htmlContent
         html = table_tags_update(html)
